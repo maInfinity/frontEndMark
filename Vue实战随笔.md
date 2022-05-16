@@ -731,9 +731,27 @@ continues	// 连续区间的长度
 
 # 权限控制
 
-动态路由
+## 路由权限
 
-登录后，根据服务端返回的数据中 携带的 routes，这里面包含了可以查看的功能（即权限，然后和公开路由拼接在一起，再放到router的routes配置中
+**核心：**通过**addRoutes**配置动态路由
+
+登录后，根据服务端返回的 用户个人信息 数据中 携带的 routes（这里需要后台配置好返回来），这里面包含了可以查看的路由（即权限），然后考虑到可能有公开路由（即任何人都能访问的路由，如首页），再将其和公开路由拼接在一起，再通过`router.addRoutes(fullRoutes)`即可
+
+```javascript
+let openRoutes = [
+    {
+        path:'/',
+        name:'Home',
+        component:Home
+    }
+]
+fullRoutes = openRoutes.concat(userRoutes)
+router.addRoutes(fullRoutes)
+```
+
+## 按钮权限
+
+将登录用户的按钮权限信息存储到store中，在按钮上通过v-if判断按钮可见与否
 
 
 
