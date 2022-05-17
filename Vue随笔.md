@@ -239,7 +239,13 @@ ref="input"
 
 ## **3.详细版：**
 
-vue会将组件中所有的**data中的数据的每个属性通过Objcet.definProperty()将他们转换为getter和setter，并在内部追踪依赖**。在vue中还有⼀个用来**记录这些被依赖的值的对象叫做watcher**，当我们**getter时vue会去watcher拿到数据并返回**，当我们**setter时，它会去通知watcher我们这个值变了**，然后新值是什么，**watcher接到通知修改值后，会去重新调用组件的render函数**，组件的**render函数会根据watcher的数据进行生成new virtual DOM tree（新虚拟dom树），然后vue丢掉旧的虚拟dom树，将新的虚拟dom树替换上去**，然后**虚拟dom树生成相对应的真实dom**，最终**页面重新渲染**完成，当然了**vue只会替换掉更改了的那部分虚拟dom树，其他的虚拟dom树不会变**，所以vue的效率比直接更改真实dom的效率高
+vue会将组件中所有的**data中的数据的每个属性通过Objcet.definProperty()将他们转换为getter和setter，并在内部追踪依赖**。
+
+在vue中还有⼀个用来**记录这些被依赖的值的对象叫做watcher**，当我们**getter时vue会去watcher拿到数据并返回**，当我们**setter时，它会去通知watcher我们这个值变了**，然后新值是什么
+
+**watcher接到通知修改值后，会去重新调用组件的render函数**
+
+组件的**render函数会根据watcher的数据进行生成new virtual DOM tree（新虚拟dom树），然后vue丢掉旧的虚拟dom树，将新的虚拟dom树替换上去**，然后**虚拟dom树生成相对应的真实dom**，最终**页面重新渲染**完成，当然了**vue只会替换掉更改了的那部分虚拟dom树，其他的虚拟dom树不会变**，所以vue的效率比直接更改真实dom的效率高
 
 <img src="https://s1.ax1x.com/2022/05/12/OD9a4S.png" alt="img" style="zoom: 67%;" />
 
@@ -595,7 +601,13 @@ Virtual DOM本质上是JavaScript的对象，它可以很方便的跨平台操�
 # diff算法
 
 - 首先，对比**节点本身**，判断是否为同一节点，如果**不为相同节点**，则**删除该节点重新创建节点进行替换**
-- 如果**为相同节点**，进行**patchVnode**，判断如何对该节点的子节点进行处理，先判断一方有子节点一方没有子节点的情况(如果新的children没有子节点，将旧的子节点移除)
+- 如果**为相同节点**，进行**patchVnode**：
+  - 找到对应的真实dom，称为`el`
+  - 判断`Vnode`和`oldVnode`**是否指向同一个对象**，如果是，那么直接`return`
+  - 如果他们**都有文本节点并且不相等**，那么将`el`的文本节点设置为`Vnode`的文本节点。
+  - 如果**`oldVnode`有子节点而`Vnode`没有**，则删除`el`的子节点
+  - 如果**`oldVnode`没有子节点而`Vnode`有**，则将`Vnode`的子节点真实化之后添加到`el`
+  - 如果两者**都有子节点，则执行`updateChildren`函数比较子节点**，这一步很重要
 - 比较如果都有子节点，则进行updateChildren，判断如何对这些新老节点的子节点进行操作（diff核心）。
 - 匹配时，找到相同的子节点，递归比较子节点
 
