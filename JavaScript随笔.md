@@ -119,11 +119,11 @@ function shallowClone(object) {
 存在的问题：当obj的属性有 函数、symbol、undefined时，JSON.stringify处理之后会消失
 
 ```javascript
-let obj =  = {  a: 0,
-              b: {
-                  c: 0
-              }
-             };
+let obj = {  a: 0,
+           b: {
+               c: 0
+           }
+          };
 let newObj = JSON.parse(JSON.stringify(obj))
 ```
 
@@ -294,10 +294,10 @@ Array.prototype.filter = function(fn) {
 
 ```javascript
 Array.prototype.map = function (fn) {
-    let res = []
     if (typeof fn !== 'function') {
         throw Error('fuck')
     }
+    let res = []
     for (let val of this) {
         res.push(fn(val))
     }
@@ -642,7 +642,7 @@ function debounce(func, wait, immediate = true) {
 
 **注意：**
 
-①绑定时是执行了debounce函数，该函数会返回一个函数并声明一个变量timer。也就是页面刚初始化就会执行上述操作，即使没触发事件，所以从始至终只会有一个timer变量
+①绑定时是执行了debounce函数，该函数会返回一个函数并声明一个变量timer。也就是页面刚初始化就会执行上述操作，即使没触发事件，所以从始至终只会有一个timer变量，因为返回的函数是一个闭包，对timer进行了引用，所以timer会存在
 
 ②debounce函数执行后返回一个函数，事件绑定的是这个函数。
 
@@ -1154,3 +1154,64 @@ ES6新增，let和const创建的变量
 ③获取dom的引用，后来这个dom被删除，但是引用仍存在
 
 ④闭包
+
+# new操作符
+
+• 以构造器的prototype属性为原型，创建新对象**（一个空对象，__proto__指向构造函数的prototype）**；
+
+• 将this(也就是上一句中的新对象)和调用参数传给构造函数，执行；
+
+• 如果构造器没有手动返回对象，则返回第一步创建的新对象，如果有，则舍弃掉第一步创建的新对象，返回手动return的对象。
+
+```javascript
+// 构造函数
+let Parent = function (name, age) {
+    this.name = name;
+    this.age = age;
+};
+Parent.prototype.sayName = function () {
+    console.log(this.name);
+};
+//自己定义的new方法
+let newMethod = function (Parent, ...rest) {
+    // 1.创建一个新对象，新对象为空，且原型指向构造函数的原型（这样新对象就能继承构造函数原型上的方法）
+    let child = Object.create(Parent.prototype);
+    // 2.执行Parent构造函数，且执行时this绑定为刚刚创建的空对象，这一步为空对象添加构造函数上的属性
+    let result = Parent.apply(child, rest);
+    // 3.如果构造函数没有手动返回对象，也就是没有在最后return一个新对象，则返回第一步开始创建的对象
+    //	 如果构造函数手动返回了一个新对象（只要构造函数里没有return一个新对象，就默认return this）
+    //   就返回 构造函数返回的对象
+    //   注意：！！！如果构造函数return了一个非引用型数据（即返回普通型数据），则默认还是返回this
+    return typeof result  === 'object' ? result : child;
+};
+//创建实例，将构造函数Parent与形参作为参数传入
+const child = newMethod(Parent, 'echo', 26);
+child.sayName() //'echo';
+//最后检验，与使用new的效果相同
+child instanceof Parent//true
+child.hasOwnProperty('name')//true
+child.hasOwnProperty('age')//true
+child.hasOwnProperty('sayName')//false
+```
+
+# Promise封装ajax
+
+```javascript
+function getJSON(url) {
+    let promise = new Promise(function (resolve, reject) {
+        let xhr = new XMLHttpRequest()
+        xhr.open('GET', url, true)
+        xhr.onreadystatechange = function () {
+            if (this.readyState != 4) return
+            if (this.status == 200) resolve(this.response)
+            else reject(new Error(this.statusText))
+        }
+        xhr.onerror = function () { reject(new Error(this.statusText)) }
+        xhr.responseType = 'json'
+        xhr.setRequestHeader('Accept', 'application/json')
+        xhr.send(null)
+    })
+    return promise
+}
+```
+
