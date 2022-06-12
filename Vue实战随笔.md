@@ -1,14 +1,8 @@
 # 项目初始化：
 
-1. 安装依赖
+## ①安装依赖
 
-```
-npm i vue-router@3  因为用的是vue2
-npm i vuex@3
-npm i axios
-```
-
-2. 配置跨域
+## ②配置跨域（不一定需要）
 
 新建vue.config.js
 
@@ -25,7 +19,7 @@ module.exports = {
 }
 ```
 
-3. 配置@根路径
+## ③配置@根路径
 
 新建js.config.json（不用记，直接复制即可）
 
@@ -46,19 +40,56 @@ module.exports = {
 }
 ```
 
-4. 初始化样式
+## ④配置接口和axios
 
-```css
-body,ul,li,p,h1,h2,h3,h4,h5 {
-    margin: 0;
-    padding: 0;
-}
-ul {
-    list-style:none;
-}
+1）新建api文件夹
+
+2）新建index.js文件
+
+```javascript
+import requests from './request'  // 配置axios
+// 下边都是接口
 ```
 
+3）新建request.js文件
 
+```javascript
+import axios from "axios";
+const requests = axios.create({
+    baseURL: 'http://geek.itheima.net/',	// 基API地址
+    timeout: 5000
+})
+requests.interceptors.request.use((config) => {
+    return config
+})
+
+requests.interceptors.response.use(
+    (res) => {
+        return res.data
+    },
+    (err) => {
+        return Promise.reject(new Error('fail'))
+    }
+)
+
+export default requests // 导出
+```
+
+## ⑤新建vue router和vuex（vue create创建选中最好）
+
+## ⑥新建styles文件夹
+
+## ⑦新建utils文件夹
+
+## ⑧可选
+
+### 1）babel.config.js
+
+配置插件按需引入用的，按文档来就行，**默认没有，需要自己创建**
+
+### 2）postcss.config.js
+
+移动端适配
 
 # 项目目录：
 
@@ -79,7 +110,7 @@ module.exports = {
 }
 ```
 
-## **js.config.json**：
+## js.config.json：配置@src
 
 配置路径简写，不用记下来，只要这么配置了，**@字符就默认代表src目录**
 
@@ -332,6 +363,76 @@ Mock.mock('/mock/floors',{
     data:floors
 })
 ```
+
+# 移动端适配：
+
+## 适配方案选型
+
+1. PC端一般都是1:1用px还原UI设计图, 靠内容撑开高度
+2. 移动端一般都是rem单位进行适配
+
+## 适配步骤
+
+1. 下载amfe-flexible
+
+   > 根据网页宽度, 设置html的font-size
+
+   ```js
+   yarn add amfe-flexible
+   ```
+
+2. 到main.js引入
+
+   ```js
+   import "amfe-flexible"
+   ```
+
+3. 下载postcss和postcss-pxtorem@5.1.1
+
+   > postcss: 后处理css, 编译翻译css代码
+   >
+   > postcss-pxtorem: 把css代码里所有px计算转换成rem
+
+   ```js
+   yarn add postcss postcss-pxtorem@5.1.1
+   ```
+
+4. 根目录下创建postcss.config.js文件
+
+   > 对postcss进行设置
+
+   ```js
+   module.exports = {
+     plugins: {
+       'postcss-pxtorem': {
+         // 能够把所有元素的px单位转成Rem
+         // rootValue: 转换px的基准值。
+         // 编码时, 一个元素宽是75px，则换成rem之后就是2rem
+         rootValue: 37.5,
+         propList: ['*']
+       }
+     }
+   }
+   
+   ```
+
+   > 37.5 是如何得来的?
+   >
+   > UI移动端设计图宽度375px, 而flexible.js会/10, 设置html的font-size为37.5
+
+## 小结
+
+1. 移动端适配选择哪种?
+
+   rem + flexible.js
+
+2. flexible.js作用是什么?
+
+   js代码里获取网页宽度 / 10设置html的font-size的值(px单位)
+
+3. 代码里px如何自动转换rem?
+
+   postcss和postcss-pxtorem插件
 
 # 组件请求vuex数据步骤：
 
